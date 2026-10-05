@@ -1,7 +1,7 @@
 # Serverless REST API with CI/CD and Canary Deployments
 
-[![ci](https://github.com/OWNER/serverless-rest-api-cicd/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/serverless-rest-api-cicd/actions/workflows/ci.yml)
-[![deploy](https://github.com/OWNER/serverless-rest-api-cicd/actions/workflows/deploy.yml/badge.svg)](https://github.com/OWNER/serverless-rest-api-cicd/actions/workflows/deploy.yml)
+[![ci](https://github.com/billy604/serverless-rest-api-cicd.git/actions/workflows/ci.yml/badge.svg)](https://github.com/billy604/serverless-rest-api-cicd.git//actions/workflows/ci.yml)
+[![deploy](https://github.com/billy604/serverless-rest-api-cicd.git//actions/workflows/deploy.yml/badge.svg)](https://github.com/billy604/serverless-rest-api-cicd.git/actions/workflows/deploy.yml)
 ![coverage](https://img.shields.io/badge/coverage-%E2%89%A580%25-brightgreen)
 ![terraform](https://img.shields.io/badge/IaC-Terraform-7B42BC)
 ![aws](https://img.shields.io/badge/cloud-AWS-FF9900)
