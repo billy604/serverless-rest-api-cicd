@@ -1,0 +1,151 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Serverless task manager API
+
+Resources:
+  ItemsTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: tasks-table
+      PrimaryKey:
+        Name: id
+        Type: String
+
+  
+  ItemsApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Auth:
+        DefaultAuthorizer: CognitoAuthorizer
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !GetAtt UserPool.Arn
+            Identity:
+              Header: Authorization
+  CreateItemFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: create_item.lambda_handler
+      Runtime: python3.12
+      CodeUri: src/handlers/
+      Timeout: 10
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref ItemsTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ItemsTable
+      Events:
+        CreateItem:
+          Type: Api
+          Properties:
+            Path: /items
+            Method: post
+            RestApiId: !Ref ItemsApi
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  GetItemFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: get_item.lambda_handler
+      Runtime: python3.12
+      CodeUri: src/handlers/
+      Timeout: 10
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref ItemsTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ItemsTable
+      Events:
+        GetItem:
+          Type: Api
+          Properties:
+            Path: /items/{id}
+            Method: get
+            RestApiId: !Ref ItemsApi
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  UpdateItemFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: update_item.lambda_handler
+      Runtime: python3.12
+      CodeUri: src/handlers/
+      Timeout: 10
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref ItemsTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ItemsTable
+      Events:
+        UpdateItem:
+          Type: Api
+          Properties:
+            Path: /items/{id}
+            Method: put
+            RestApiId: !Ref ItemsApi
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  DeleteItemFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: delete_item.lambda_handler
+      Runtime: python3.12
+      CodeUri: src/handlers/
+      Timeout: 10
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref ItemsTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ItemsTable
+      Events:
+        DeleteItem:
+          Type: Api
+          Properties:
+            Path: /items/{id}
+            Method: delete
+            RestApiId: !Ref ItemsApi
+            Auth:
+              Authorizer: CognitoAuthorizer
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: task-api-users
+      AutoVerifiedAttributes:
+        - email
+      UsernameAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: true
+          RequireLowercase: true
+          RequireNumbers: true
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient 
+    Properties:
+      ClientName: task-api-client
+      UserPoolId: !Ref UserPool
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      GenerateSecret: false
+
+Outputs:
+  ApiUrl:
+    Description: Base URL for the API
+    Value: !Sub "https://${ItemsApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+  UserPoolId:
+    Description: Cognito User Pool ID
+    Value: !Ref UserPool
+  UserPoolClientId:
+    Description: Cognito User Pool Client ID
+    Value: !Ref UserPoolClient
